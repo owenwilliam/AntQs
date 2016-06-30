@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: lib/mysql.jar
+Main-Class: com.owen.test.ConverterTest
+
+

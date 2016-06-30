@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- 定义生成文件的project根元素，默认的target为空 -->
+<project name="AntQs" basedir="." default="">
+	<!-- 定义三个简单属性 -->
+	<property name="src" value="src"/>
+	<property name="classes" value="classes"/>
+	<property name="dest" value="dest"/>
+	 <!-- 项目web临时路径 -->  
+	 <property name="project.web.temp.path" value="${basedir}/WebContent" />  
+	 <!-- 项目引用包所在路径 -->  
+	 <property name="project.classpath" value="${project.web.temp.path}/WEB-INF/lib" />  
+	
+	<!-- 定义一组文件和目录集 -->
+	<path id="classpath">
+		<pathelement path="${classes}"/>
+		<!--指定Jar包
+		<pathelement path="${project.classpath}/mysql-connector-java-5.1.30-bin.jar"/>-->
+	    <fileset dir="${project.classpath}">    
+	        <include name="**/*.jar"/>    
+	    </fileset>  
+	</path>
+	<!-- 定义help target，用于输出该生成文件的帮助信息 -->
+	<target name="help" description="打印帮助信息">
+		<echo>help - 打印帮助信息</echo>
+		<echo>compile - 编译Java源文件</echo>
+		<echo>run - 运行程序</echo>
+		<echo>build - 打包JAR包</echo>
+		<echo>clean - 清除所有编译生成的文件</echo>
+	</target>
+	<!-- 定义compile target，用于编译Java源文件 -->
+	<target name="compile" description="编译Java源文件">
+		<!-- 先删除classes属性所代表的文件夹 -->
+		<delete dir="${classes}"/>
+		<!-- 创建classes属性所代表的文件夹 -->
+		<mkdir dir="${classes}"/>
+		<!-- 编译Java文件，编译后的class文件放到classes属性所代表的文件夹内 -->
+		<javac destdir="${classes}" debug="true" includeantruntime="yes"
+			deprecation="false" optimize="false" failonerror="true">
+			<!--给编译器指定编码，防止出现："警告： 编码 GBK 的不可映射字符"-->
+			<compilerarg line="-encoding UTF-8 "/>
+			<!-- 指定需要编译的Java文件所在的位置 -->
+			<src path="${src}"/>
+			<!-- 指定编译Java文件所需要第三方类库所在的位置 -->
+			<classpath refid="classpath"/>
+		</javac>
+		 <!-- 配置文件拷贝 -->  
+	        <copy todir="${classes}">  
+	           <fileset dir="${src}">  
+	              <include name="*.properties" />  
+	          </fileset>  
+	        	 <fileset dir="${project.web.temp.path}">
+	                <exclude name="WEB-INF/*.*" /> 
+	            </fileset>
+	        	 <fileset dir="${project.classpath}">
+	                <exclude name="**/*.jar" /> 
+	            </fileset>	
+	       </copy>  
+	</target>
+	<!-- 定义run target，用于运行Java源文件，
+		运行该target之前会先运行compile target -->
+	<target name="run" description="运行程序" depends="compile">
+		<!-- 运行com.owen.test.ConverterTest类,其中fork指定启动另一个JVM来执行java命令 -->
+		<java classname="com.owen.test.ConverterTest" fork="yes" failonerror="true">
+			<classpath refid="classpath"/>
+			<!-- 运行Java程序时传入2个参数 -->
+			<arg line="测试参数1 测试参数2"/>
+		</java>
+	</target>
+	<!-- 定义build target，用于打包JAR文件，
+		运行该target之前会先运行compile target -->
+	<target name="build" description="打包JAR文件" depends="compile">
+		<!-- 先删除dest属性所代表的文件夹 -->
+		<delete dir="${dest}"/>
+		<!-- 创建dest属性所代表的文件夹 -->
+		<mkdir dir="${dest}"/>
+		<!-- 指定将classes属性所代表的文件夹下的所有
+			*.classes文件都打包到app.jar文件中 -->
+		<jar destfile="${dest}/AntQs.jar" basedir="${classes}"
+			includes="**/*.*">
+			<!-- 为JAR包的清单文件添加属性 -->
+			<manifest>
+				<attribute name="Manifest-Version" value="2.0"/>
+				<attribute name="Main-Class" value="com.owen.test.ConverterTest"/>
+				<attribute name="Class-Path" value="lib/mysql-connector-java-5.1.30-bin.jar"/>
+			</manifest>
+		</jar>
+		<!-- 先删除dest属性所代表的文件夹 -->
+		<delete dir="${dest}/lib"/>
+		<!-- 创建dest属性所代表的文件夹 -->
+		<mkdir dir="${dest}/lib"/>
+		
+		<!-- JAR拷贝 -->  
+	      <copy todir="${dest}/lib">  
+	       	<fileset dir="${project.classpath}">
+                <include name="*.jar" /> 
+            </fileset>	
+	       </copy>  
+	</target>
+	<!-- 定义clean target，用于删除所有编译生成的文件 -->
+	<!--<target name="clean" description="清除所有编译生成的文件"> -->
+		<!-- 删除两个目录，目录下的文件也一并删除 -->
+	<!--<delete dir="${classes}"/>
+		<delete dir="${dest}"/>
+	</target>-->
+</project>
